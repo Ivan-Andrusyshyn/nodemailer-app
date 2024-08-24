@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "start": "nodemon dist/index.js",
+    "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
   "author": "",
@@ -15,7 +15,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "nodemon": "^3.1.4",
     "nodemailer": "^6.9.14"
   },
   "devDependencies": {
