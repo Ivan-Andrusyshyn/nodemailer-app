@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Sender</title>
-    <link type="text/html" rel="stylesheet" href="./styles.css" />
     <style>
       /* Reset some default styles */
       body,
@@ -93,7 +92,7 @@
       .success-message-wrapper {
         margin: 1rem auto;
       }
-      .success-message-wrapper {
+      .success-message {
         font-weight: 600;
         color: green;
       }
@@ -131,55 +130,63 @@
         </div>
       </section>
     </main>
-  </body>
-  <script>
-    const form = document.getElementById("email-form");
-    const successMessage = document.querySelector(".success-message");
-    const formButton = document.querySelector(".email-form-btn");
+    <script>
+      const form = document.getElementById("email-form");
+      const successMessage = document.querySelector(".success-message");
+      const formButton = document.querySelector(".email-form-btn");
 
-    const API_URL =
-      window.location.hostname === "localhost"
-        ? "http://localhost:3000/send-email"
-        : "https://nodemailer-app-kappa.vercel.app/send-email";
+      // Determine API URL based on environment
+      const API_URL =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000/send-email"
+          : "https://nodemailer-app-kappa.vercel.app/send-email";
 
-    form.addEventListener("submit", (event) => onSubmit(event));
-    const onSubmit = async (event) => {
-      event.preventDefault();
+      form.addEventListener("submit", (event) => onSubmit(event));
 
-      const form = event.target;
-      const formData = new FormData(form);
-      const email = formData.get("email");
-      if (!email.trim()) {
-        successMessage.innerHTML = "Please enter email.";
-        successMessage.classList.add("error");
-        return;
-      }
-      formButton.innerHTML = "";
+      const onSubmit = async (event) => {
+        event.preventDefault();
 
-      try {
-        const isErrorClassOnEl =
-          successMessage.className === "success-message error";
-        if (isErrorClassOnEl) {
-          successMessage.classList.remove("error");
+        const form = event.target;
+        const formData = new FormData(form);
+        const email = formData.get("email");
+
+        if (!email.trim()) {
+          successMessage.textContent = "Please enter an email address.";
+          successMessage.className = "success-message error";
+          return;
         }
 
-        formButton.innerHTML = "loading...";
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
+        formButton.textContent = "Loading...";
 
-        const { message } = await response.json();
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
 
-        successMessage.innerHTML = message;
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        formButton.innerHTML = "Send";
-      }
-    };
-  </script>
+          if (!response.ok) {
+            const errorText = await response.text();
+            successMessage.textContent =
+              "Failed to send email. Server responded with: " + errorText;
+            successMessage.className = "success-message error";
+            return;
+          }
+
+          const { message } = await response.json();
+          successMessage.textContent = message;
+          successMessage.className = "success-message";
+        } catch (error) {
+          console.error("Error:", error);
+          successMessage.textContent =
+            "Failed to send email. Please try again.";
+          successMessage.className = "success-message error";
+        } finally {
+          formButton.textContent = "Send";
+        }
+      };
+    </script>
+  </body>
 </html>
