@@ -137,6 +137,11 @@
     const successMessage = document.querySelector(".success-message");
     const formButton = document.querySelector(".email-form-btn");
 
+    const API_URL =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000/send-email"
+        : "https://nodemailer-app-kappa.vercel.app/send-email";
+
     form.addEventListener("submit", (event) => onSubmit(event));
     const onSubmit = async (event) => {
       event.preventDefault();
@@ -159,7 +164,7 @@
         }
 
         formButton.innerHTML = "loading...";
-        const response = await fetch("http://localhost:3000/send-email", {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -168,11 +173,8 @@
         });
 
         const { message } = await response.json();
-        console.log("Response:", message);
-        console.log("Response:", successMessage);
 
         successMessage.innerHTML = message;
-        formButton.innerHTML = "Send";
       } catch (error) {
         console.error("Error:", error);
       } finally {
