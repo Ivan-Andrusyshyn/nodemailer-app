@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
     res.sendFile(path_1.default.join(__dirname, "/index.html"));
 });
 app.get("/send-email/config", (req, res) => {
-    res.json({ api: process.env.NP_API_KEY });
+    res.json({ apiNPKey: process.env.NP_API_KEY });
 });
 app.post("/send-email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
