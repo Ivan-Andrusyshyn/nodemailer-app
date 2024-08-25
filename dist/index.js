@@ -22,10 +22,7 @@ const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 app.use(express_1.default.static(path_1.default.join(__dirname, "styles.css")));
 app.use((0, cors_1.default)({
-    origin: [
-        "https://nodemailer-app-kappa.vercel.app",
-        "http://localhost:3000",
-    ],
+    origin: ["https://nodemailer-app-nu.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
 }));
@@ -35,7 +32,7 @@ app.get("/", (req, res) => {
     res.sendFile(path_1.default.join(__dirname, "/index.html"));
 });
 app.get("/send-email/config", (req, res) => {
-    res.json({ apiNPKey: process.env.NP_API_KEY });
+    res.json({ api: process.env.NP_API_KEY });
 });
 app.post("/send-email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
