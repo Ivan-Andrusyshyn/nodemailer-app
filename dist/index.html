@@ -4,8 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Sender</title>
+    <link
+      rel="icon"
+      href="https://tse3.mm.bing.net/th?id=OIP.uDwqZ8dnbMvZfR7GS8NUrQHaGu&pid=Api&P=0&h=180"
+      type="image/x-icon"
+    />
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/np-select@1.0.3/build/np-select.umd.js"
+    ></script>
     <style>
-      /* Reset some default styles */
       body,
       h1,
       h2,
@@ -26,6 +34,7 @@
         flex-direction: column;
         min-height: 100vh;
       }
+      /*  */
       .email-section {
         margin: 2rem auto;
         background: white;
@@ -46,7 +55,7 @@
       }
 
       .header h1 {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         margin-bottom: 10px;
       }
 
@@ -54,11 +63,8 @@
         font-size: 1.1rem;
       }
 
-      .email-form {
-      }
-
       .email-section h2 {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         margin-bottom: 15px;
       }
 
@@ -75,7 +81,7 @@
         font-size: 1rem;
       }
 
-      .email-section button {
+      .email-form-btn {
         background-color: #2575fc;
         color: white;
         border: none;
@@ -86,7 +92,7 @@
         transition: background-color 0.3s ease;
       }
 
-      .email-section button:hover {
+      .email-form-btn:hover {
         background-color: #6a11cb;
       }
       .success-message-wrapper {
@@ -99,47 +105,168 @@
       .error {
         color: red;
       }
+
+      .np-select__input {
+        border: none;
+        background: transparent;
+        color: inherit;
+        flex: 1;
+      }
+
+      .np-select.open .np-select__button {
+        border-color: #007bff;
+        background-color: #e5f5ec;
+      }
+
+      .np-select__box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--np-select-white, #fff);
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: var(--np-select-box-shadow, 0 4px 8px rgba(0, 0, 0, 0.1));
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .np-select__option {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .np-select__option.selected {
+        background-color: var(--np-select-active, #e5f5ec);
+      }
+
+      .np-select__option:hover {
+        background-color: #f0f0f0;
+      }
+
+      .np-select[aria-invalid="true"] .np-select__button {
+        border-color: var(--np-select-error, tomato);
+      }
+
       @media screen and (min-width: 480px) {
         .header h1 {
-          font-size: 2.5rem;
+          font-size: 2rem;
           margin-bottom: 10px;
         }
+      }
+
+      .loading_base {
+        margin: 1rem 0;
+      }
+      .hidden {
+        display: none;
+        text-align: left;
       }
     </style>
   </head>
   <body>
     <header class="header">
-      <h1>🌟 Email Sender App 🌟</h1>
-      <p>Send emails with ease!</p>
+      <h1>🌟 Додаток для Надсилання Листів 🌟</h1>
+      <p>Шукай нову пошту та надсилай адресу з легкістю!</p>
     </header>
     <main>
       <section class="email-section">
-        <h2>Send an Email</h2>
+        <h2>Надіслати Лист</h2>
+        <div id="city">
+          <input type="text" class="city" placeholder="Введіть місто" />
+        </div>
+        <div id="warehouse"></div>
+        <div id="loading" class="loading_base hidden">Loading...</div>
         <form id="email-form" class="email-form">
-          <label for="email"></label>
           <input
             id="email"
             type="email"
             name="email"
-            placeholder="Recipient's email"
+            placeholder="Електронна пошта одержувача"
           />
-          <button type="submit" class="email-form-btn">Send</button>
+          <button type="submit" class="email-form-btn">Надіслати</button>
         </form>
         <div class="success-message-wrapper">
           <p class="success-message"></p>
         </div>
       </section>
     </main>
-    <script>
-      const form = document.getElementById("email-form");
-      const successMessage = document.querySelector(".success-message");
-      const formButton = document.querySelector(".email-form-btn");
 
-      // Determine API URL based on environment
+    <script type="module">
       const API_URL =
         window.location.hostname === "localhost"
           ? "http://localhost:3000/send-email"
           : "https://nodemailer-app-kappa.vercel.app/send-email";
+
+      let API_KEY;
+      let selectedCity = null;
+      let selectedWarehouse = null;
+      const loadingEl = document.getElementById("loading");
+      const cityContainer = document.getElementById("city");
+      const werhouseContainer = document.getElementById("warehouse");
+      const getConfigs = async () => {
+        try {
+          return await fetch(API_URL + "/config", { method: "GET" });
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      document.addEventListener("DOMContentLoaded", async () => {
+        const response = await getConfigs();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const config = await response.json();
+        API_KEY = config.apiNPKey;
+
+        cityContainer.style.marginBottom = "2.5rem";
+        NpSelect.NpCitySelect({
+          apiKey: API_KEY,
+          input: {
+            name: "city",
+            placeholder: "Київ..",
+          },
+          button: {
+            text: "Обери місто",
+          },
+          root: document.querySelector("#city"),
+          onSelect: async (item, select) => {
+            cityContainer.style.marginBottom = "0";
+            loadingEl.classList.remove("hidden");
+            selectedCity = item;
+            const warehouses = await select.api.getNpWarehouses(item.value);
+            const warehouseSelect = NpSelect.NpWarehouseSelect({
+              apiKey: API_KEY,
+              input: {
+                name: "warehouse",
+                placeholder: "Обери відділення",
+              },
+              button: {
+                text: "Обери відділення",
+              },
+              root: document.querySelector("#warehouse"),
+              onMounted: (select) => select.setDisabled(true),
+            });
+            loadingEl.classList.add("hidden");
+            werhouseContainer.style.marginBottom = "2rem";
+            warehouseSelect.setOptions(warehouses);
+            warehouseSelect.setDisabled(false);
+            warehouseSelect.setOpen(true);
+
+            warehouseSelect.onSelect = (warehouseItem) => {
+              selectedWarehouse = warehouseItem;
+            };
+          },
+        });
+      });
+
+      // =============>
+      const form = document.getElementById("email-form");
+      const selectForm = document.querySelector(".select-form");
+      const successMessage = document.querySelector(".success-message");
+      const formButton = document.querySelector(".email-form-btn");
 
       form.addEventListener("submit", (event) => onSubmit(event));
 
@@ -164,7 +291,11 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({
+              email,
+              selectedCity: selectedCity.label,
+              selectedWarehouse: selectedWarehouse.label,
+            }),
           });
 
           if (!response.ok) {

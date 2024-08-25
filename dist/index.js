@@ -20,6 +20,7 @@ const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
+app.use(express_1.default.static(path_1.default.join(__dirname, "styles.css")));
 app.use((0, cors_1.default)({
     origin: [
         "https://nodemailer-app-kappa.vercel.app",
@@ -31,13 +32,15 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
-    res.sendFile(path_1.default.join(__dirname + "/index.html"));
+    res.sendFile(path_1.default.join(__dirname, "/index.html"));
+});
+app.get("/send-email/config", (req, res) => {
+    res.json({ apiNPKey: process.env.NP_API_KEY });
 });
 app.post("/send-email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { email } = req.body;
-        console.log("Received email:", email);
-        yield (0, nodemailer_1.main)(email);
+        const { email, selectedCity, selectedWarehouse } = req.body;
+        yield (0, nodemailer_1.main)({ email, city: selectedCity, warehouse: selectedWarehouse });
         res.status(200).json({ message: "Email sent successfully!" });
     }
     catch (error) {
@@ -46,5 +49,5 @@ app.post("/send-email", (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 }));
 app.listen(port, () => {
-    console.log(`[server]: Server is running !`);
+    console.log(`[server]: Server is running http://localhost:3000`);
 });

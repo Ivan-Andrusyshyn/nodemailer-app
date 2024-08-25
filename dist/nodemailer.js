@@ -22,16 +22,20 @@ const transporter = nodemailer.createTransport({
         pass: process.env.APP_EMAIL_PASSWORD,
     },
 });
-function main(email) {
-    return __awaiter(this, void 0, void 0, function* () {
+function main(_a) {
+    return __awaiter(this, arguments, void 0, function* ({ email, city, warehouse }) {
         const htmlTemplate = yield (0, promises_1.readFile)((0, path_1.join)(__dirname, "email.html"), "utf-8");
+        console.log(city, warehouse);
+        const htmlContent = htmlTemplate
+            .replace(/{{city}}/g, city)
+            .replace(/{{warehouse}}/g, warehouse);
         try {
             const info = yield transporter.sendMail({
                 from: `"Ivan Dev 🧑‍💻" <${process.env.EMAIL_USER}>`,
                 to: email,
                 subject: "Hello ✔",
                 text: "Hello world?",
-                html: htmlTemplate,
+                html: htmlContent,
             });
             console.log("Message sent: %s", info.messageId);
         }
